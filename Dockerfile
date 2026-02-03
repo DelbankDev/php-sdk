@@ -10,6 +10,10 @@ RUN echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.l
     zip \
     && rm -rf /var/lib/apt/lists/*
 
+# Instalar Xdebug (versão compatível com PHP 7.2)
+RUN pecl install xdebug-3.1.6 \
+    && docker-php-ext-enable xdebug
+
 # Instalar Composer
 COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
 
@@ -21,3 +25,6 @@ WORKDIR /var/www/html
 
 # Ajustar permissões
 RUN chown -R www-data:www-data /var/www/html
+
+# Copiar configuração do Xdebug
+COPY docker-php-ext-xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
