@@ -5,7 +5,6 @@ namespace Delfinance\Transfers\Services;
 use Delfinance\Abstractions\Startup\DelfinanceClient;
 use Delfinance\Transfers\Interfaces\ITransfersService;
 use Delfinance\Transfers\Responses\GetTransferResponse;
-use Delfinance\Transfers\Dto\TransferDto;
 use Exception;
 
 /**
@@ -81,22 +80,22 @@ class TransfersService implements ITransfersService
 
         $data = json_decode($response, true);
 
-        $dto = new TransferDto();
+        $responseObj = new GetTransferResponse();
 
-        $dto->id = isset($data['id']) ? $data['id'] : null;
-        $dto->endToEndId = isset($data['endToEndId']) ? $data['endToEndId'] : null;
-        $dto->externalId = isset($data['externalId']) ? $data['externalId'] : null;
-        $dto->status = isset($data['status']) ? $data['status'] : null;
-        $dto->type = isset($data['type']) ? $data['type'] : null;
-        $dto->amount = isset($data['amount']) ? $data['amount'] : null;
-        $dto->createdAt = isset($data['createdAt']) ? $data['createdAt'] : null;
-        $dto->updatedAt = isset($data['updatedAt']) ? $data['updatedAt'] : null;
+        $responseObj->id = isset($data['id']) ? $data['id'] : null;
+        $responseObj->endToEndId = isset($data['endToEndId']) ? $data['endToEndId'] : null;
+        $responseObj->externalId = isset($data['externalId']) ? $data['externalId'] : null;
+        $responseObj->status = isset($data['status']) ? $data['status'] : null;
+        $responseObj->type = isset($data['type']) ? $data['type'] : null;
+        $responseObj->amount = isset($data['amount']) ? $data['amount'] : null;
+        $responseObj->createdAt = isset($data['createdAt']) ? $data['createdAt'] : null;
+        $responseObj->updatedAt = isset($data['updatedAt']) ? $data['updatedAt'] : null;
         
         // TODO: DTOs para Error, Payer e Beneficiary.
-        $dto->error = isset($data['error']) ? $data['error'] : null;
-        $dto->payer = isset($data['payer']) ? $data['payer'] : null;
-        $dto->beneficiary = isset($data['beneficiary']) ? $data['beneficiary'] : null;
+        $responseObj->error = isset($data['error']) ? $data['error'] : null;
+        $responseObj->payer = isset($data['payer']) ? $data['payer'] : null;
+        $responseObj->beneficiary = isset($data['beneficiary']) ? $data['beneficiary'] : null;
 
-        return new GetTransferResponse($dto);
+        return $responseObj;
     }
 }

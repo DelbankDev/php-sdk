@@ -3,9 +3,9 @@
 namespace Delfinance\Transfers\Responses;
 
 /**
- * Class GetTransferResponse
+ * Class DecodeQrCodeResponse
  */
-class GetTransferResponse
+class DecodeQrCodeResponse
 {
     /**
      * @var string

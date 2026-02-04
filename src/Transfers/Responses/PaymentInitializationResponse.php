@@ -1,12 +1,11 @@
 <?php
 
-namespace Delfinance\Transfers\Dto;
+namespace Delfinance\Transfers\Responses;
 
 /**
- * Class TransferDto
- * Represents the data of a transfer.
+ * Class PaymentInitializationResponse
  */
-class TransferDto
+class PaymentInitializationResponse
 {
     /**
      * @var string
