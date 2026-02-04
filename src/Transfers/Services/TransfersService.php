@@ -4,7 +4,9 @@ namespace Delfinance\Transfers\Services;
 
 use Delfinance\Abstractions\Startup\DelfinanceClient;
 use Delfinance\Transfers\Interfaces\ITransfersService;
+use Delfinance\Transfers\Requests\CreateTransferRequest;
 use Delfinance\Transfers\Responses\GetTransferResponse;
+use Delfinance\Transfers\Responses\CreateTransferResponse;
 use Exception;
 
 /**
@@ -92,6 +94,90 @@ class TransfersService implements ITransfersService
         $responseObj->updatedAt = isset($data['updatedAt']) ? $data['updatedAt'] : null;
         
         // TODO: DTOs para Error, Payer e Beneficiary.
+        $responseObj->error = isset($data['error']) ? $data['error'] : null;
+        $responseObj->payer = isset($data['payer']) ? $data['payer'] : null;
+        $responseObj->beneficiary = isset($data['beneficiary']) ? $data['beneficiary'] : null;
+
+        return $responseObj;
+    }
+
+    /**
+     * Initializes a transfer.
+     *
+     * @param CreateTransferRequest $request
+     * @param string $idempotencyKey
+     * @return CreateTransferResponse
+     * @throws Exception
+     */
+    public function createTransfer(CreateTransferRequest $request, $idempotencyKey)
+    {
+        $url = $this->client->getBaseUrl() . '/baas/api/v2/transfers';
+        
+        $body = json_encode([
+            'amount' => $request->amount,
+            'description' => $request->description,
+            'endToEndId' => $request->endToEndId,
+            'initiationType' => $request->initiationType
+        ]);
+
+        // Configuração do cURL
+        $ch = curl_init();
+        
+        $headers = [
+            'Content-Type: application/json',
+            'Accept: application/json',
+            'x-delbank-api-key: ' . $this->client->getApiKey(),
+            'x-delfinance-account-id: ' . $this->client->getAccountId(),
+            'IdempotencyKey: ' . $idempotencyKey
+        ];
+
+        $options = [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $body,
+            // Timeout padrão
+            CURLOPT_TIMEOUT => 30,
+        ];
+
+        // Configuração mTLS se fornecida
+        if ($this->client->getCertificatePath() && $this->client->getPrivateKeyPath()) {
+            $options[CURLOPT_SSLCERT] = $this->client->getCertificatePath();
+            $options[CURLOPT_SSLKEY] = $this->client->getPrivateKeyPath();
+        }
+
+        curl_setopt_array($ch, $options);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        
+        curl_close($ch);
+
+        if ($error) {
+            throw new Exception("cURL Error: " . $error);
+        }
+
+        if ($httpCode >= 400) {
+            throw new Exception("API Error: " . $response, $httpCode);
+        }
+
+        $data = json_decode($response, true);
+        
+        $responseObj = new CreateTransferResponse();
+        
+        $responseObj->id = isset($data['id']) ? $data['id'] : null;
+        $responseObj->endToEndId = isset($data['endToEndId']) ? $data['endToEndId'] : null;
+        $responseObj->transactionNsu = isset($data['transactionNsu']) ? $data['transactionNsu'] : null;
+        $responseObj->externalId = isset($data['externalId']) ? $data['externalId'] : null;
+        $responseObj->status = isset($data['status']) ? $data['status'] : null;
+        $responseObj->type = isset($data['type']) ? $data['type'] : null;
+        $responseObj->amount = isset($data['amount']) ? $data['amount'] : null;
+        $responseObj->createdAt = isset($data['createdAt']) ? $data['createdAt'] : null;
+        $responseObj->description = isset($data['description']) ? $data['description'] : null;
+        $responseObj->updatedAt = isset($data['updatedAt']) ? $data['updatedAt'] : null;
+        
         $responseObj->error = isset($data['error']) ? $data['error'] : null;
         $responseObj->payer = isset($data['payer']) ? $data['payer'] : null;
         $responseObj->beneficiary = isset($data['beneficiary']) ? $data['beneficiary'] : null;
