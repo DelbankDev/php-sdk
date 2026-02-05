@@ -40,10 +40,15 @@ class PixService implements IPixService
     {
         $url = $this->client->getBaseUrl() . '/baas/api/v2/pix/dict/payment-initialization';
         
-        $body = json_encode([
-            'key' => $request->key,
-            'holderDocument' => $request->holderDocument
-        ]);
+        $payload = [
+            'key' => $request->key
+        ];
+
+        if (!empty($request->holderDocument)) {
+            $payload['holderDocument'] = $request->holderDocument;
+        }
+
+        $body = json_encode($payload);
 
         // Configuração do cURL
         $ch = curl_init();
