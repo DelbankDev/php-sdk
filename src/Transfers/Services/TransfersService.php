@@ -5,8 +5,13 @@ namespace Delfinance\Transfers\Services;
 use Delfinance\Abstractions\Startup\DelfinanceClient;
 use Delfinance\Transfers\Interfaces\ITransfersService;
 use Delfinance\Transfers\Requests\CreateTransferRequest;
+use Delfinance\Transfers\Requests\CreateBatchTransferRequest;
+use Delfinance\Transfers\Requests\CreateTedTransferRequest;
 use Delfinance\Transfers\Responses\GetTransferResponse;
 use Delfinance\Transfers\Responses\CreateTransferResponse;
+use Delfinance\Transfers\Responses\CreateBatchTransferResponse;
+use Delfinance\Transfers\Responses\CreateTedTransferResponse;
+use Delfinance\Utils\RequestHelper;
 use Exception;
 
 /**
@@ -20,12 +25,18 @@ class TransfersService implements ITransfersService
     private $client;
 
     /**
+     * @var RequestHelper
+     */
+    private $requestHelper;
+
+    /**
      * TransfersService constructor.
      * @param DelfinanceClient $client
      */
     public function __construct(DelfinanceClient $client)
     {
         $this->client = $client;
+        $this->requestHelper = new RequestHelper($client);
     }
 
     /**
@@ -39,47 +50,7 @@ class TransfersService implements ITransfersService
     {
         $url = $this->client->getBaseUrl() . '/baas/api/v2/transfers/' . $transferIdentifier;
         
-        // Configuração do cURL
-        $ch = curl_init();
-        
-        $headers = [
-            'Content-Type: application/json',
-            'Accept: application/json',
-            'x-delbank-api-key: ' . $this->client->getApiKey(),
-            'x-delfinance-account-id: ' . $this->client->getAccountId(),
-        ];
-
-        $options = [
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-            // Timeout padrão
-            CURLOPT_TIMEOUT => 30,
-        ];
-
-        // Configuração mTLS se fornecida
-        if ($this->client->getCertificatePath() && $this->client->getPrivateKeyPath()) {
-            $options[CURLOPT_SSLCERT] = $this->client->getCertificatePath();
-            $options[CURLOPT_SSLKEY] = $this->client->getPrivateKeyPath();
-        }
-
-        curl_setopt_array($ch, $options);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error = curl_error($ch);
-        
-        curl_close($ch);
-
-        if ($error) {
-            throw new Exception("cURL Error: " . $error);
-        }
-
-        if ($httpCode >= 400) {
-            throw new Exception("API Error: " . $response, $httpCode);
-        }
-
+        $response = $this->requestHelper->execute('GET', $url);
         $data = json_decode($response, true);
 
         $responseObj = new GetTransferResponse();
@@ -113,56 +84,31 @@ class TransfersService implements ITransfersService
     {
         $url = $this->client->getBaseUrl() . '/baas/api/v2/transfers';
         
-        $body = json_encode([
+        $payload = [
             'amount' => $request->amount,
             'description' => $request->description,
             'endToEndId' => $request->endToEndId,
-            'initiationType' => $request->initiationType
-        ]);
-
-        // Configuração do cURL
-        $ch = curl_init();
-        
-        $headers = [
-            'Content-Type: application/json',
-            'Accept: application/json',
-            'x-delbank-api-key: ' . $this->client->getApiKey(),
-            'x-delfinance-account-id: ' . $this->client->getAccountId(),
-            'IdempotencyKey: ' . $idempotencyKey
+            'initiationType' => $request->initiationType,
+            'beneficiaryId' => $request->beneficiaryId,
+            'saveFavorite' => $request->saveFavorite,
+            'type' => $request->type,
+            'beneficiary' => $request->beneficiary,
+            'beneficiaryAccount' => $request->beneficiaryAccount,
+            'transactionId' => $request->transactionId,
+            'transferAt' => $request->transferAt,
+            'tags' => $request->tags,
+            'externalId' => $request->externalId,
+            'splitInstructions' => $request->splitInstructions
         ];
 
-        $options = [
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $body,
-            // Timeout padrão
-            CURLOPT_TIMEOUT => 30,
-        ];
+        // Remove null values to avoid sending unnecessary data
+        $payload = array_filter($payload, function($value) {
+            return $value !== null;
+        });
 
-        // Configuração mTLS se fornecida
-        if ($this->client->getCertificatePath() && $this->client->getPrivateKeyPath()) {
-            $options[CURLOPT_SSLCERT] = $this->client->getCertificatePath();
-            $options[CURLOPT_SSLKEY] = $this->client->getPrivateKeyPath();
-        }
+        $body = json_encode($payload);
 
-        curl_setopt_array($ch, $options);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error = curl_error($ch);
-        
-        curl_close($ch);
-
-        if ($error) {
-            throw new Exception("cURL Error: " . $error);
-        }
-
-        if ($httpCode >= 400) {
-            throw new Exception("API Error: " . $response, $httpCode);
-        }
-
+        $response = $this->requestHelper->execute('POST', $url, $body, ['IdempotencyKey: ' . $idempotencyKey]);
         $data = json_decode($response, true);
         
         $responseObj = new CreateTransferResponse();
@@ -179,6 +125,71 @@ class TransfersService implements ITransfersService
         $responseObj->updatedAt = isset($data['updatedAt']) ? $data['updatedAt'] : null;
         
         $responseObj->error = isset($data['error']) ? $data['error'] : null;
+        $responseObj->payer = isset($data['payer']) ? $data['payer'] : null;
+        $responseObj->beneficiary = isset($data['beneficiary']) ? $data['beneficiary'] : null;
+
+        return $responseObj;
+    }
+
+    /**
+     * Initializes a batch transfer.
+     *
+     * @param CreateBatchTransferRequest $request
+     * @return CreateBatchTransferResponse
+     * @throws Exception
+     */
+    public function createBatchTransfer(CreateBatchTransferRequest $request)
+    {
+        $url = $this->client->getBaseUrl() . '/baas/api/v1/transfers/batch';
+        
+        $body = json_encode($request->items);
+
+        $response = $this->requestHelper->execute('POST', $url, $body);
+        $data = json_decode($response, true);
+        
+        $responseObj = new CreateBatchTransferResponse();
+        
+        $responseObj->id = isset($data['id']) ? $data['id'] : null;
+        $responseObj->status = isset($data['status']) ? $data['status'] : null;
+        $responseObj->bankAccountNumber = isset($data['bankAccountNumber']) ? $data['bankAccountNumber'] : null;
+        $responseObj->createdAt = isset($data['createdAt']) ? $data['createdAt'] : null;
+        $responseObj->createdBy = isset($data['createdBy']) ? $data['createdBy'] : null;
+        $responseObj->items = isset($data['items']) ? $data['items'] : [];
+
+        return $responseObj;
+    }
+
+    /**
+     * Initializes a TED transfer.
+     *
+     * @param CreateTedTransferRequest $request
+     * @param string $idempotencyKey
+     * @return CreateTedTransferResponse
+     * @throws Exception
+     */
+    public function createTedTransfer(CreateTedTransferRequest $request, $idempotencyKey)
+    {
+        $url = $this->client->getBaseUrl() . '/baas/api/v2/transfers/ted';
+        
+        $body = json_encode([
+            'amount' => $request->amount,
+            'description' => $request->description,
+            'beneficiary' => $request->beneficiary
+        ]);
+
+        $response = $this->requestHelper->execute('POST', $url, $body, ['IdempotencyKey: ' . $idempotencyKey]);
+        $data = json_decode($response, true);
+        
+        $responseObj = new CreateTedTransferResponse();
+        
+        $responseObj->id = isset($data['id']) ? $data['id'] : null;
+        $responseObj->status = isset($data['status']) ? $data['status'] : null;
+        $responseObj->paymentChannel = isset($data['paymentChannel']) ? $data['paymentChannel'] : null;
+        $responseObj->type = isset($data['type']) ? $data['type'] : null;
+        $responseObj->amount = isset($data['amount']) ? $data['amount'] : null;
+        $responseObj->createdAt = isset($data['createdAt']) ? $data['createdAt'] : null;
+        $responseObj->updatedAt = isset($data['updatedAt']) ? $data['updatedAt'] : null;
+        $responseObj->description = isset($data['description']) ? $data['description'] : null;
         $responseObj->payer = isset($data['payer']) ? $data['payer'] : null;
         $responseObj->beneficiary = isset($data['beneficiary']) ? $data['beneficiary'] : null;
 
