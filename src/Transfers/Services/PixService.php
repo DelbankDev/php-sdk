@@ -40,9 +40,15 @@ class PixService implements IPixService
     {
         $url = $this->client->getBaseUrl() . '/baas/api/v2/pix/dict/payment-initialization';
         
-        $body = json_encode([
+        $payload = [
             'key' => $request->key
-        ]);
+        ];
+
+        if (!empty($request->holderDocument)) {
+            $payload['holderDocument'] = $request->holderDocument;
+        }
+
+        $body = json_encode($payload);
 
         // Configuração do cURL
         $ch = curl_init();
@@ -90,18 +96,10 @@ class PixService implements IPixService
         
         $responseObj = new PaymentInitializationResponse();
         
-        $responseObj->id = isset($data['id']) ? $data['id'] : null;
         $responseObj->endToEndId = isset($data['endToEndId']) ? $data['endToEndId'] : null;
-        $responseObj->externalId = isset($data['externalId']) ? $data['externalId'] : null;
-        $responseObj->status = isset($data['status']) ? $data['status'] : null;
-        $responseObj->type = isset($data['type']) ? $data['type'] : null;
-        $responseObj->amount = isset($data['amount']) ? $data['amount'] : null;
-        $responseObj->createdAt = isset($data['createdAt']) ? $data['createdAt'] : null;
-        $responseObj->updatedAt = isset($data['updatedAt']) ? $data['updatedAt'] : null;
-        
-        $responseObj->error = isset($data['error']) ? $data['error'] : null;
-        $responseObj->payer = isset($data['payer']) ? $data['payer'] : null;
+        $responseObj->key = isset($data['key']) ? $data['key'] : null;
         $responseObj->beneficiary = isset($data['beneficiary']) ? $data['beneficiary'] : null;
+        $responseObj->keyBelongsHolder = isset($data['keyBelongsHolder']) ? $data['keyBelongsHolder'] : null;
 
         return $responseObj;
     }
@@ -167,18 +165,11 @@ class PixService implements IPixService
         
         $responseObj = new DecodeQrCodeResponse();
         
-        $responseObj->id = isset($data['id']) ? $data['id'] : null;
-        $responseObj->endToEndId = isset($data['endToEndId']) ? $data['endToEndId'] : null;
-        $responseObj->externalId = isset($data['externalId']) ? $data['externalId'] : null;
-        $responseObj->status = isset($data['status']) ? $data['status'] : null;
-        $responseObj->type = isset($data['type']) ? $data['type'] : null;
-        $responseObj->amount = isset($data['amount']) ? $data['amount'] : null;
-        $responseObj->createdAt = isset($data['createdAt']) ? $data['createdAt'] : null;
-        $responseObj->updatedAt = isset($data['updatedAt']) ? $data['updatedAt'] : null;
-        
-        $responseObj->error = isset($data['error']) ? $data['error'] : null;
-        $responseObj->payer = isset($data['payer']) ? $data['payer'] : null;
-        $responseObj->beneficiary = isset($data['beneficiary']) ? $data['beneficiary'] : null;
+        foreach ($data as $key => $value) {
+            if (property_exists($responseObj, $key)) {
+                $responseObj->$key = $value;
+            }
+        }
 
         return $responseObj;
     }
