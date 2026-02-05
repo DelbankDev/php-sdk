@@ -25,6 +25,11 @@ class DecodeQrCodeResponse
     /**
      * @var string
      */
+    public $expirationTime;
+
+    /**
+     * @var string
+     */
     public $revision;
 
     /**
@@ -101,6 +106,11 @@ class DecodeQrCodeResponse
      * @var array|null
      */
     public $payer;
+
+    /**
+     * @var array|null
+     */
+    public $bankAccountRecipient;
 
     /**
      * @var array|null
