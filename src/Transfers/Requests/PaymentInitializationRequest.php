@@ -14,11 +14,18 @@ class PaymentInitializationRequest
     public $key;
 
     /**
+     * @var string
+     */
+    public $holderDocument;
+
+    /**
      * PaymentInitializationRequest constructor.
      * @param string $key
+     * @param string $holderDocument
      */
-    public function __construct($key)
+    public function __construct($key, $holderDocument)
     {
         $this->key = $key;
+        $this->holderDocument = $holderDocument;
     }
 }
