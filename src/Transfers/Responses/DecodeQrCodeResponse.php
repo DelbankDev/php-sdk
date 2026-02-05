@@ -10,7 +10,7 @@ class DecodeQrCodeResponse
     /**
      * @var string
      */
-    public $id;
+    public $key;
 
     /**
      * @var string
@@ -20,22 +20,22 @@ class DecodeQrCodeResponse
     /**
      * @var string
      */
-    public $externalId;
+    public $transactionId;
 
     /**
      * @var string
      */
-    public $status;
+    public $revision;
 
     /**
-     * @var string
+     * @var bool
      */
-    public $type;
+    public $allowChangeAmount;
 
     /**
-     * @var float
+     * @var bool
      */
-    public $amount;
+    public $categoryCode;
 
     /**
      * @var string
@@ -45,12 +45,57 @@ class DecodeQrCodeResponse
     /**
      * @var string
      */
-    public $updatedAt;
+    public $capturedAt;
+
+    /**
+     * @var string
+     */
+    public $type;
+
+    /**
+     * @var string
+     */
+    public $status;
+
+    /**
+     * @var float
+     */
+    public $amount;
 
     /**
      * @var array|null
      */
-    public $error;
+    public $originalAmount;
+
+    /**
+     * @var string
+     */
+    public $fineAmount;
+
+    /**
+     * @var string
+     */
+    public $feesAmount;
+
+    /**
+     * @var string
+     */
+    public $discountAmount;
+
+    /**
+     * @var string
+     */
+    public $rebateAmount;
+
+    /**
+     * @var string
+     */
+    public $dueDate;
+
+    /**
+     * @var int
+     */
+    public $paymentDeadline;
 
     /**
      * @var array|null
@@ -61,4 +106,14 @@ class DecodeQrCodeResponse
      * @var array|null
      */
     public $beneficiary;
+
+    /**
+     * @var array|null
+     */
+    public $additionalInfos;
+
+    /**
+     * @var array|null
+     */
+    public $recurrence;
 }
