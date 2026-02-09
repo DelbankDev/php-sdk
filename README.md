@@ -95,3 +95,14 @@ docker-compose up --build
 ```
 
 Isso iniciará uma aplicação PHP simples que executa um teste de integração e exibe o resultado em `http://localhost:8080`.
+
+### Depuração (Xdebug)
+
+O ambiente Docker já está configurado com Xdebug 3. Para depurar no VS Code:
+
+1.  Certifique-se de que a extensão **PHP Debug** (xdebug.php-debug) esteja instalada.
+2.  Vá para a aba "Run and Debug" (Ctrl+Shift+D).
+3.  Selecione **"Listen for Xdebug"** no dropdown superior.
+4.  Inicie o listener (F5).
+5.  Coloque breakpoints no seu código.
+6.  Acesse `http://localhost:8080` ou rode scripts via CLI no container.
