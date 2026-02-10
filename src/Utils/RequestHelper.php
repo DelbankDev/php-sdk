@@ -58,11 +58,16 @@ class RequestHelper
 
         if ($method === 'POST') {
             $options[CURLOPT_POST] = true;
-            if ($body) {
+            if ($body !== null && $body !== '') {
                 $options[CURLOPT_POSTFIELDS] = $body;
             }
         } elseif ($method === 'GET') {
             $options[CURLOPT_CUSTOMREQUEST] = 'GET';
+        } elseif ($method === 'PATCH') {
+            $options[CURLOPT_CUSTOMREQUEST] = 'PATCH';
+            if ($body !== null && $body !== '') {
+                $options[CURLOPT_POSTFIELDS] = $body;
+            }
         }
 
         if ($this->client->getCertificatePath() && $this->client->getPrivateKeyPath()) {
@@ -87,5 +92,149 @@ class RequestHelper
         }
 
         return $response;
+    }
+
+    /**
+     * Execute a POST request and map response to object.
+     *
+     * @param string $url
+     * @param array $bodyArray
+     * @param string $responseClass
+     * @return mixed
+     * @throws Exception
+     */
+    public function post($url, $bodyArray, $responseClass)
+    {
+        $body = json_encode($bodyArray);
+        if ($body === false) {
+            throw new Exception("JSON Encode Error: " . json_last_error_msg());
+        }
+        $response = $this->execute('POST', $url, $body);
+        return $this->mapResponseToObject($response, $responseClass);
+    }
+
+    /**
+     * Execute a GET request and map response to object.
+     *
+     * @param string $url
+     * @param string $responseClass
+     * @return mixed
+     * @throws Exception
+     */
+    public function get($url, $responseClass)
+    {
+        $response = $this->execute('GET', $url);
+        return $this->mapResponseToObject($response, $responseClass);
+    }
+
+    /**
+     * Execute a GET request and map response to list of objects.
+     *
+     * @param string $url
+     * @param string $itemClass
+     * @return array
+     * @throws Exception
+     */
+    public function getList($url, $itemClass)
+    {
+        $response = $this->execute('GET', $url);
+        return $this->mapResponseToList($response, $itemClass);
+    }
+
+    /**
+     * Execute a PATCH request.
+     *
+     * @param string $url
+     * @param array|null $bodyArray
+     * @return mixed
+     * @throws Exception
+     */
+    public function patch($url, $bodyArray = null)
+    {
+        $body = null;
+        if ($bodyArray !== null) {
+            $body = json_encode($bodyArray);
+            if ($body === false) {
+                throw new Exception("JSON Encode Error: " . json_last_error_msg());
+            }
+        }
+        $response = $this->execute('PATCH', $url, $body);
+        return json_decode($response, true);
+    }
+
+    /**
+     * Map JSON response to Object.
+     *
+     * @param string $jsonResponse
+     * @param string $className
+     * @return mixed
+     */
+    private function mapResponseToObject($jsonResponse, $className)
+    {
+        $data = json_decode($jsonResponse, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception("JSON Decode Error: " . json_last_error_msg() . " | Raw response: " . $jsonResponse);
+        }
+
+        $obj = new $className();
+        
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                if (property_exists($obj, $key)) {
+                    $obj->$key = $value;
+                }
+            }
+        }
+        
+        return $obj;
+    }
+
+    /**
+     * Map JSON response to List of Objects.
+     *
+     * @param string $jsonResponse
+     * @param string $className
+     * @return array
+     */
+    private function mapResponseToList($jsonResponse, $className)
+    {
+        $data = json_decode($jsonResponse, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception("JSON Decode Error: " . json_last_error_msg() . " | Raw response: " . $jsonResponse);
+        }
+
+        if (!is_array($data)) {
+            return [];
+        }
+
+        $results = [];
+        
+        // Check if sequential array (list)
+        if (array_keys($data) === range(0, count($data) - 1) && !empty($data)) {
+            foreach ($data as $itemData) {
+                if (is_array($itemData)) {
+                    $obj = new $className();
+                    foreach ($itemData as $key => $value) {
+                        if (property_exists($obj, $key)) {
+                            $obj->$key = $value;
+                        }
+                    }
+                    $results[] = $obj;
+                }
+            }
+        } else if (!empty($data)) {
+            // Assume single object if not sequential or empty
+            $obj = new $className();
+            foreach ($data as $key => $value) {
+                if (property_exists($obj, $key)) {
+                    $obj->$key = $value;
+                }
+            }
+            $results[] = $obj;
+        }
+
+        return $results;
     }
 }
