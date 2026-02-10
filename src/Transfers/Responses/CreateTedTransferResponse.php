@@ -1,12 +1,11 @@
 <?php
 
-namespace Delfinance\Transfers\Dto;
+namespace Delfinance\Transfers\Responses;
 
 /**
- * Class TransferDto
- * Represents the data of a transfer.
+ * Class CreateTedTransferResponse
  */
-class TransferDto
+class CreateTedTransferResponse
 {
     /**
      * @var string
@@ -16,17 +15,12 @@ class TransferDto
     /**
      * @var string
      */
-    public $endToEndId;
-
-    /**
-     * @var string
-     */
-    public $externalId;
-
-    /**
-     * @var string
-     */
     public $status;
+
+    /**
+     * @var string
+     */
+    public $paymentChannel;
 
     /**
      * @var string
@@ -49,9 +43,9 @@ class TransferDto
     public $updatedAt;
 
     /**
-     * @var array|null
+     * @var string
      */
-    public $error;
+    public $description;
 
     /**
      * @var array|null

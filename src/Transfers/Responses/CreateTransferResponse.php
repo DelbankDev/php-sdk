@@ -3,9 +3,9 @@
 namespace Delfinance\Transfers\Responses;
 
 /**
- * Class GetTransferResponse
+ * Class CreateTransferResponse
  */
-class GetTransferResponse
+class CreateTransferResponse
 {
     /**
      * @var string
@@ -16,6 +16,11 @@ class GetTransferResponse
      * @var string
      */
     public $endToEndId;
+
+    /**
+     * @var int|string
+     */
+    public $transactionNsu;
 
     /**
      * @var string
@@ -41,6 +46,11 @@ class GetTransferResponse
      * @var string
      */
     public $createdAt;
+
+    /**
+     * @var string
+     */
+    public $description;
 
     /**
      * @var string
