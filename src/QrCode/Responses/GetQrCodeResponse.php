@@ -3,7 +3,7 @@
 namespace Delfinance\QrCode\Responses;
 
 /**
- * Class QrCodeDTO
+ * Class GetQrCodeResponse
  */
 class GetQrCodeResponse
 {

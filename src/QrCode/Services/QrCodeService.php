@@ -182,7 +182,7 @@ class QrCodeService implements IQrCodeService
      * Get Immediate QR Code by ID.
      *
      * @param string $id
-     * @return QrCodeDTO
+     * @return GetQrCodeResponse
      * @throws Exception
      */
     public function getImmediateQrCode($id)
@@ -195,7 +195,7 @@ class QrCodeService implements IQrCodeService
      * Get Due Date QR Code by ID.
      *
      * @param string $id
-     * @return QrCodeDTO
+     * @return GetQrCodeResponse
      * @throws Exception
      */
     public function getDueDateQrCode($id)

@@ -2,13 +2,9 @@
 
 namespace Delfinance\QrCode\Interfaces;
 
-use Delfinance\Transfers\Requests\PaymentInitializationRequest;
-use Delfinance\Transfers\Requests\DecodeQrCodeRequest;
 use Delfinance\QrCode\Requests\ImmediateQrCodeRequest;
 use Delfinance\QrCode\Requests\DueDateQrCodeRequest;
 use Delfinance\QrCode\Requests\StaticQrCodeRequest;
-use Delfinance\Transfers\Responses\PaymentInitializationResponse;
-use Delfinance\Transfers\Responses\DecodeQrCodeResponse;
 use Delfinance\QrCode\Responses\CreateImmediateQrCodeResponse;
 use Delfinance\QrCode\Responses\CreateDueDateQrCodeResponse;
 use Delfinance\QrCode\Responses\CreateStaticQrCodeResponse;

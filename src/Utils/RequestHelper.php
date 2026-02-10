@@ -58,14 +58,14 @@ class RequestHelper
 
         if ($method === 'POST') {
             $options[CURLOPT_POST] = true;
-            if ($body) {
+            if ($body !== null && $body !== '') {
                 $options[CURLOPT_POSTFIELDS] = $body;
             }
         } elseif ($method === 'GET') {
             $options[CURLOPT_CUSTOMREQUEST] = 'GET';
         } elseif ($method === 'PATCH') {
             $options[CURLOPT_CUSTOMREQUEST] = 'PATCH';
-            if ($body) {
+            if ($body !== null && $body !== '') {
                 $options[CURLOPT_POSTFIELDS] = $body;
             }
         }
@@ -106,6 +106,9 @@ class RequestHelper
     public function post($url, $bodyArray, $responseClass)
     {
         $body = json_encode($bodyArray);
+        if ($body === false) {
+            throw new Exception("JSON Encode Error: " . json_last_error_msg());
+        }
         $response = $this->execute('POST', $url, $body);
         return $this->mapResponseToObject($response, $responseClass);
     }
@@ -148,7 +151,13 @@ class RequestHelper
      */
     public function patch($url, $bodyArray = null)
     {
-        $body = $bodyArray ? json_encode($bodyArray) : null;
+        $body = null;
+        if ($bodyArray !== null) {
+            $body = json_encode($bodyArray);
+            if ($body === false) {
+                throw new Exception("JSON Encode Error: " . json_last_error_msg());
+            }
+        }
         $response = $this->execute('PATCH', $url, $body);
         return json_decode($response, true);
     }
@@ -163,6 +172,11 @@ class RequestHelper
     private function mapResponseToObject($jsonResponse, $className)
     {
         $data = json_decode($jsonResponse, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception("JSON Decode Error: " . json_last_error_msg() . " | Raw response: " . $jsonResponse);
+        }
+
         $obj = new $className();
         
         if (is_array($data)) {
@@ -187,6 +201,10 @@ class RequestHelper
     {
         $data = json_decode($jsonResponse, true);
         
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception("JSON Decode Error: " . json_last_error_msg() . " | Raw response: " . $jsonResponse);
+        }
+
         if (!is_array($data)) {
             return [];
         }
