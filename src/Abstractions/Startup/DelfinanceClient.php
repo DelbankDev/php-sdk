@@ -150,7 +150,7 @@ class DelfinanceClient
     public function getBaseUrl()
     {
         if ($this->environment === Environment::PRODUCTION) {
-            return 'https://api.delfinance.com/v1';
+            return 'https://api.delbank.com.br';
         }
 
         return 'https://apisandbox.delbank.com.br';

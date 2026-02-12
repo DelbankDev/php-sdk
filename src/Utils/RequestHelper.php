@@ -68,6 +68,11 @@ class RequestHelper
             if ($body !== null && $body !== '') {
                 $options[CURLOPT_POSTFIELDS] = $body;
             }
+        } elseif ($method === 'DELETE') {
+            $options[CURLOPT_CUSTOMREQUEST] = 'DELETE';
+            if ($body !== null && $body !== '') {
+                $options[CURLOPT_POSTFIELDS] = $body;
+            }
         }
 
         if ($this->client->getCertificatePath() && $this->client->getPrivateKeyPath()) {
