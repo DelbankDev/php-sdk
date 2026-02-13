@@ -6,8 +6,14 @@ use Delfinance\Abstractions\Startup\DelfinanceClient;
 use Delfinance\Transfers\Interfaces\IPixService;
 use Delfinance\Transfers\Requests\PaymentInitializationRequest;
 use Delfinance\Transfers\Requests\DecodeQrCodeRequest;
+use Delfinance\Transfers\Requests\CreatePixKeyRequest;
+use Delfinance\Transfers\Requests\DeletePixKeyRequest;
 use Delfinance\Transfers\Responses\PaymentInitializationResponse;
 use Delfinance\Transfers\Responses\DecodeQrCodeResponse;
+use Delfinance\Transfers\Responses\CreatePixKeyResponse;
+use Delfinance\Transfers\Responses\DeletePixKeyResponse;
+use Delfinance\Transfers\Responses\GetPixKeysResponse;
+use Delfinance\Utils\RequestHelper;
 use Exception;
 
 /**
@@ -21,12 +27,18 @@ class PixService implements IPixService
     private $client;
 
     /**
+     * @var RequestHelper
+     */
+    private $requestHelper;
+
+    /**
      * PixService constructor.
      * @param DelfinanceClient $client
      */
     public function __construct(DelfinanceClient $client)
     {
         $this->client = $client;
+        $this->requestHelper = new RequestHelper($client);
     }
 
     /**
@@ -50,48 +62,7 @@ class PixService implements IPixService
 
         $body = json_encode($payload);
 
-        // Configuração do cURL
-        $ch = curl_init();
-        
-        $headers = [
-            'Content-Type: application/json',
-            'Accept: application/json',
-            'x-delbank-api-key: ' . $this->client->getApiKey(),
-            'x-delfinance-account-id: ' . $this->client->getAccountId()
-        ];
-
-        $options = [
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $body,
-            // Timeout padrão
-            CURLOPT_TIMEOUT => 30,
-        ];
-
-        // Configuração mTLS se fornecida
-        if ($this->client->getCertificatePath() && $this->client->getPrivateKeyPath()) {
-            $options[CURLOPT_SSLCERT] = $this->client->getCertificatePath();
-            $options[CURLOPT_SSLKEY] = $this->client->getPrivateKeyPath();
-        }
-
-        curl_setopt_array($ch, $options);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error = curl_error($ch);
-        
-        curl_close($ch);
-
-        if ($error) {
-            throw new Exception("cURL Error: " . $error);
-        }
-
-        if ($httpCode >= 400) {
-            throw new Exception("API Error: " . $response, $httpCode);
-        }
-
+        $response = $this->requestHelper->execute('POST', $url, $body);
         $data = json_decode($response, true);
         
         $responseObj = new PaymentInitializationResponse();
@@ -119,48 +90,7 @@ class PixService implements IPixService
             'payload' => $request->payload
         ]);
 
-        // Configuração do cURL
-        $ch = curl_init();
-        
-        $headers = [
-            'Content-Type: application/json',
-            'Accept: application/json',
-            'x-delbank-api-key: ' . $this->client->getApiKey(),
-            'x-delfinance-account-id: ' . $this->client->getAccountId()
-        ];
-
-        $options = [
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $body,
-            // Timeout padrao
-            CURLOPT_TIMEOUT => 30,
-        ];
-
-        // Configuração mTLS se fornecida
-        if ($this->client->getCertificatePath() && $this->client->getPrivateKeyPath()) {
-            $options[CURLOPT_SSLCERT] = $this->client->getCertificatePath();
-            $options[CURLOPT_SSLKEY] = $this->client->getPrivateKeyPath();
-        }
-
-        curl_setopt_array($ch, $options);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error = curl_error($ch);
-        
-        curl_close($ch);
-
-        if ($error) {
-            throw new Exception("cURL Error: " . $error);
-        }
-
-        if ($httpCode >= 400) {
-            throw new Exception("API Error: " . $response, $httpCode);
-        }
-
+        $response = $this->requestHelper->execute('POST', $url, $body);
         $data = json_decode($response, true);
         
         $responseObj = new DecodeQrCodeResponse();
@@ -170,6 +100,116 @@ class PixService implements IPixService
                 $responseObj->$key = $value;
             }
         }
+
+        return $responseObj;
+    }
+
+    /**
+     * Creates a new Pix Key (DICT Entry).
+     *
+     * @param CreatePixKeyRequest $request
+     * @param string $idempotencyKey
+     * @return CreatePixKeyResponse
+     * @throws Exception
+     */
+    public function createPixKey(CreatePixKeyRequest $request, $idempotencyKey)
+    {
+        $url = $this->client->getBaseUrl() . '/baas/api/v1/pix/dict/entries';
+        
+        $payload = [
+            'entryType' => $request->entryType
+        ];
+
+        if ($request->key !== null) {
+            $payload['key'] = $request->key;
+        }
+
+        $body = json_encode($payload);
+
+        $headers = [
+            'IdempotencyKey: ' . $idempotencyKey
+        ];
+
+        if ($request->authCode !== null) {
+            $headers[] = 'x-auth-code: ' . $request->authCode;
+        }
+
+        if ($request->authId !== null) {
+            $headers[] = 'x-auth-id: ' . $request->authId;
+        }
+
+        $response = $this->requestHelper->execute('POST', $url, $body, $headers);
+        $data = json_decode($response, true);
+        
+        $responseObj = new CreatePixKeyResponse();
+        
+        // Populate response object from data
+        foreach ($data as $key => $value) {
+            if (property_exists($responseObj, $key)) {
+                $responseObj->$key = $value;
+            }
+        }
+
+        return $responseObj;
+    }
+
+    /**
+     * Deletes a Pix Key (DICT Entry).
+     *
+     * @param DeletePixKeyRequest $request
+     * @param string $idempotencyKey
+     * @return DeletePixKeyResponse
+     * @throws Exception
+     */
+    public function deletePixKey(DeletePixKeyRequest $request, $idempotencyKey)
+    {
+        $url = $this->client->getBaseUrl() . '/baas/api/v1/pix/dict/entries';
+        
+        $payload = [
+            'entryType' => $request->entryType,
+            'key' => $request->key
+        ];
+
+        $body = json_encode($payload);
+
+        $headers = [
+            'IdempotencyKey: ' . $idempotencyKey
+        ];
+        
+        $response = $this->requestHelper->execute('DELETE', $url, $body, $headers);
+        
+        // Check if response is empty (success 204) or has content
+        if (empty($response)) {
+            $responseObj = new DeletePixKeyResponse();
+            $responseObj->success = true;
+            $responseObj->message = "Key deleted successfully.";
+            return $responseObj;
+        }
+
+        $data = json_decode($response, true);
+        
+        $responseObj = new DeletePixKeyResponse();
+        $responseObj->success = true;
+        // Map any returned fields if necessary, or just return success
+        
+        return $responseObj;
+    }
+
+    /**
+     * Lists all Pix Keys (DICT Entries).
+     *
+     * @return GetPixKeysResponse
+     * @throws Exception
+     */
+    public function getPixKeys()
+    {
+        $url = $this->client->getBaseUrl() . '/baas/api/v1/pix/dict/entries';
+        
+        $response = $this->requestHelper->execute('GET', $url);
+        $data = json_decode($response, true);
+        
+        $responseObj = new GetPixKeysResponse();
+        $responseObj->keys = $data;
 
         return $responseObj;
     }
