@@ -6,11 +6,13 @@ use Delfinance\Transfers\Requests\PaymentInitializationRequest;
 use Delfinance\Transfers\Requests\DecodeQrCodeRequest;
 use Delfinance\Transfers\Requests\CreatePixKeyRequest;
 use Delfinance\Transfers\Requests\DeletePixKeyRequest;
+use Delfinance\Transfers\Requests\GenerateAuthCodeRequest;
 use Delfinance\Transfers\Responses\PaymentInitializationResponse;
 use Delfinance\Transfers\Responses\DecodeQrCodeResponse;
 use Delfinance\Transfers\Responses\CreatePixKeyResponse;
 use Delfinance\Transfers\Responses\DeletePixKeyResponse;
 use Delfinance\Transfers\Responses\GetPixKeysResponse;
+use Delfinance\Transfers\Responses\GenerateAuthCodeResponse;
 
 /**
  * Interface IPixService
@@ -57,4 +59,12 @@ interface IPixService
      * @return GetPixKeysResponse
      */
     public function getPixKeys();
+
+    /**
+     * Generates an authentication code for Pix Keys (EMAIL or PHONE).
+     *
+     * @param GenerateAuthCodeRequest $request
+     * @return GenerateAuthCodeResponse
+     */
+    public function generateAuthCode(GenerateAuthCodeRequest $request);
 }

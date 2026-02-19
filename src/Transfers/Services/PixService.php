@@ -8,11 +8,13 @@ use Delfinance\Transfers\Requests\PaymentInitializationRequest;
 use Delfinance\Transfers\Requests\DecodeQrCodeRequest;
 use Delfinance\Transfers\Requests\CreatePixKeyRequest;
 use Delfinance\Transfers\Requests\DeletePixKeyRequest;
+use Delfinance\Transfers\Requests\GenerateAuthCodeRequest;
 use Delfinance\Transfers\Responses\PaymentInitializationResponse;
 use Delfinance\Transfers\Responses\DecodeQrCodeResponse;
 use Delfinance\Transfers\Responses\CreatePixKeyResponse;
 use Delfinance\Transfers\Responses\DeletePixKeyResponse;
 use Delfinance\Transfers\Responses\GetPixKeysResponse;
+use Delfinance\Transfers\Responses\GenerateAuthCodeResponse;
 use Delfinance\Utils\RequestHelper;
 use Exception;
 
@@ -130,11 +132,11 @@ class PixService implements IPixService
             'IdempotencyKey: ' . $idempotencyKey
         ];
 
-        if ($request->authCode !== null) {
+        if (!empty($request->authCode)) {
             $headers[] = 'x-auth-code: ' . $request->authCode;
         }
 
-        if ($request->authId !== null) {
+        if (!empty($request->authId)) {
             $headers[] = 'x-auth-id: ' . $request->authId;
         }
 
@@ -210,6 +212,37 @@ class PixService implements IPixService
         
         $responseObj = new GetPixKeysResponse();
         $responseObj->keys = $data;
+
+        return $responseObj;
+    }
+
+    /**
+     * Generates an authentication code for creating Pix Keys (EMAIL or PHONE).
+     *
+     * @param GenerateAuthCodeRequest $request
+     * @return GenerateAuthCodeResponse
+     * @throws Exception
+     */
+    public function generateAuthCode(GenerateAuthCodeRequest $request)
+    {
+        $url = $this->client->getBaseUrl() . '/baas/api/v1/pix/dict/auth-code';
+        
+        $body = json_encode([
+            'sender' => $request->sender,
+            'receiver' => $request->receiver,
+            'payload' => $request->payload
+        ]);
+
+        $response = $this->requestHelper->execute('POST', $url, $body);
+        $data = json_decode($response, true);
+        
+        $responseObj = new GenerateAuthCodeResponse();
+        
+        foreach ($data as $key => $value) {
+            if (property_exists($responseObj, $key)) {
+                $responseObj->$key = $value;
+            }
+        }
 
         return $responseObj;
     }
