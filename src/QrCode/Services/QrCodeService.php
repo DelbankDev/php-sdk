@@ -239,7 +239,7 @@ class QrCodeService implements IQrCodeService
      */
     public function cancelImmediateQrCode($id)
     {
-        $url = $this->client->getBaseUrl() . '/baas/api/v2/pix/qrcode/dynamic/immediate-payment/' . $id . '/cancel';
+        $url = $this->client->getBaseUrl() . '/baas/api/v2/pix/qrcode/dynamic/' . $id . '/cancel';
         return $this->requestHelper->patch($url);
     }
 
@@ -252,7 +252,7 @@ class QrCodeService implements IQrCodeService
      */
     public function cancelDueDateQrCode($id)
     {
-        $url = $this->client->getBaseUrl() . '/baas/api/v2/pix/qrcode/dynamic/due-date/' . $id . '/cancel';
+        $url = $this->client->getBaseUrl() . '/baas/api/v2/pix/qrcode/due-date/' . $id . '/cancel';
         return $this->requestHelper->patch($url);
     }
 
