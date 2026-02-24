@@ -105,16 +105,17 @@ class RequestHelper
      * @param string $url
      * @param array $bodyArray
      * @param string $responseClass
+     * @param array $customHeaders
      * @return mixed
      * @throws Exception
      */
-    public function post($url, $bodyArray, $responseClass)
+    public function post($url, $bodyArray, $responseClass, $customHeaders = [])
     {
         $body = json_encode($bodyArray);
         if ($body === false) {
             throw new Exception("JSON Encode Error: " . json_last_error_msg());
         }
-        $response = $this->execute('POST', $url, $body);
+        $response = $this->execute('POST', $url, $body, $customHeaders);
         return $this->mapResponseToObject($response, $responseClass);
     }
 
