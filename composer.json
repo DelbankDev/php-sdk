@@ -1,5 +1,5 @@
 {
-    "name": "delfinance/php-sdk",
+    "name": "delfinance/delfinance-api-sdk",
     "description": "SDK oficial da Delfinance para PHP",
     "type": "library",
     "require": {

@@ -42,7 +42,7 @@ src/
 Instale via Composer:
 
 ```bash
-composer require delfinance/php-sdk
+composer require delfinance/delfinance-api-sdk
 ```
 
 ## Início Rápido
