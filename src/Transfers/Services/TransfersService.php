@@ -72,6 +72,31 @@ class TransfersService implements ITransfersService
         return $responseObj;
     }
 
+    public function getTedTransfer($transferIdentifier)
+    {
+        $url = $this->client->getBaseUrl() . '/baas/api/v2/transfers/ted/' . $transferIdentifier;
+        
+        $response = $this->requestHelper->execute('GET', $url);
+        $data = json_decode($response, true);
+
+        $responseObj = new GetTransferResponse();
+
+        $responseObj->id = isset($data['id']) ? $data['id'] : null;
+        $responseObj->endToEndId = isset($data['endToEndId']) ? $data['endToEndId'] : null;
+        $responseObj->externalId = isset($data['externalId']) ? $data['externalId'] : null;
+        $responseObj->status = isset($data['status']) ? $data['status'] : null;
+        $responseObj->type = isset($data['type']) ? $data['type'] : null;
+        $responseObj->amount = isset($data['amount']) ? $data['amount'] : null;
+        $responseObj->createdAt = isset($data['createdAt']) ? $data['createdAt'] : null;
+        $responseObj->updatedAt = isset($data['updatedAt']) ? $data['updatedAt'] : null;
+
+        $responseObj->error = isset($data['error']) ? $data['error'] : null;
+        $responseObj->payer = isset($data['payer']) ? $data['payer'] : null;
+        $responseObj->beneficiary = isset($data['beneficiary']) ? $data['beneficiary'] : null;
+
+        return $responseObj;
+    }
+
     /**
      * Initializes a transfer.
      *
@@ -127,34 +152,6 @@ class TransfersService implements ITransfersService
         $responseObj->error = isset($data['error']) ? $data['error'] : null;
         $responseObj->payer = isset($data['payer']) ? $data['payer'] : null;
         $responseObj->beneficiary = isset($data['beneficiary']) ? $data['beneficiary'] : null;
-
-        return $responseObj;
-    }
-
-    /**
-     * Initializes a batch transfer.
-     *
-     * @param CreateBatchTransferRequest $request
-     * @return CreateBatchTransferResponse
-     * @throws Exception
-     */
-    public function createBatchTransfer(CreateBatchTransferRequest $request)
-    {
-        $url = $this->client->getBaseUrl() . '/baas/api/v1/transfers/batch';
-        
-        $body = json_encode($request->items);
-
-        $response = $this->requestHelper->execute('POST', $url, $body);
-        $data = json_decode($response, true);
-        
-        $responseObj = new CreateBatchTransferResponse();
-        
-        $responseObj->id = isset($data['id']) ? $data['id'] : null;
-        $responseObj->status = isset($data['status']) ? $data['status'] : null;
-        $responseObj->bankAccountNumber = isset($data['bankAccountNumber']) ? $data['bankAccountNumber'] : null;
-        $responseObj->createdAt = isset($data['createdAt']) ? $data['createdAt'] : null;
-        $responseObj->createdBy = isset($data['createdBy']) ? $data['createdBy'] : null;
-        $responseObj->items = isset($data['items']) ? $data['items'] : [];
 
         return $responseObj;
     }

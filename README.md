@@ -137,8 +137,8 @@ Classes: `Delfinance\Transfers\Services\PixService` e `Delfinance\Transfers\Serv
 | Inicializar Pagamento (QR Code) | `decodeQrCode(DecodeQrCodeRequest $request)` | `PixService` | Decodifica/Inicializa pagamento via payload de QR Code |
 | Criar Transferência PIX | `createTransfer(CreateTransferRequest $request, $idempotencyKey)` | `TransfersService` | Executa transferência PIX após inicialização |
 | Criar Transferência TED | `createTedTransfer(CreateTedTransferRequest $request, $idempotencyKey)` | `TransfersService` | Executa transferência TED |
-| Criar Transferência em Lote | `createBatchTransfer(CreateBatchTransferRequest $request)` | `TransfersService` | Executa múltiplas transferências em lote |
 | Consultar Transferência | `getTransfer($transferIdentifier)` | `TransfersService` | Consulta detalhes de uma transferência por ID |
+| Consultar Transferência ted | `getTedTransfer($transferIdentifier)` | `TransfersService` | Consulta detalhes de uma transferência por ID |
 
 ### Gerenciamento de Chaves PIX (Módulo `Transfers`)
 

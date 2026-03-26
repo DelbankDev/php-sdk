@@ -13,12 +13,17 @@ class GetTransferResponse
     public $id;
 
     /**
-     * @var string
+     * @var string|null (PIX)
      */
     public $endToEndId;
 
     /**
-     * @var string
+     * @var int|null (PIX)
+     */
+    public $transactionNsu;
+
+    /**
+     * @var string|null (não usado nos exemplos, manter opcional)
      */
     public $externalId;
 
@@ -43,9 +48,19 @@ class GetTransferResponse
     public $createdAt;
 
     /**
-     * @var string
+     * @var string|null (TED)
+     */
+    public $transferAt;
+
+    /**
+     * @var string|null (não presente nos payloads atuais)
      */
     public $updatedAt;
+
+    /**
+     * @var string|null
+     */
+    public $description;
 
     /**
      * @var array|null
@@ -53,12 +68,27 @@ class GetTransferResponse
     public $error;
 
     /**
-     * @var array|null
+     * @var array|null (PIX)
      */
     public $payer;
 
     /**
-     * @var array|null
+     * @var array|null (PIX)
      */
     public $beneficiary;
+
+    /**
+     * @var array|null (TED)
+     */
+    public $sender;
+
+    /**
+     * @var array|null (TED)
+     */
+    public $recipient;
+
+    /**
+     * @var array|null (TED)
+     */
+    public $tags;
 }
