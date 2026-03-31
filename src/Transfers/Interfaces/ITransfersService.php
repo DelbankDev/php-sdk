@@ -3,11 +3,9 @@
 namespace Delfinance\Transfers\Interfaces;
 
 use Delfinance\Transfers\Requests\CreateTransferRequest;
-use Delfinance\Transfers\Requests\CreateBatchTransferRequest;
 use Delfinance\Transfers\Requests\CreateTedTransferRequest;
 use Delfinance\Transfers\Responses\GetTransferResponse;
 use Delfinance\Transfers\Responses\CreateTransferResponse;
-use Delfinance\Transfers\Responses\CreateBatchTransferResponse;
 use Delfinance\Transfers\Responses\CreateTedTransferResponse;
 
 /**
@@ -31,14 +29,6 @@ interface ITransfersService
      * @return CreateTransferResponse
      */
     public function createTransfer(CreateTransferRequest $request, $idempotencyKey);
-
-    /**
-     * Initializes a batch transfer.
-     *
-     * @param CreateBatchTransferRequest $request
-     * @return CreateBatchTransferResponse
-     */
-    public function createBatchTransfer(CreateBatchTransferRequest $request);
 
     /**
      * Initializes a TED transfer.
