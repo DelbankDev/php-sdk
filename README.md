@@ -96,7 +96,7 @@ Certifique-se de que os arquivos de certificado sejam legíveis pelo processo do
 
 ## Funcionalidades
 
-### QR Code Estático (Módulo `QrCode`)
+### QR Code Estático (Módulo `QR Code`)
 
 Classe: `Delfinance\QrCode\Services\QrCodeService`
 
@@ -107,7 +107,7 @@ Classe: `Delfinance\QrCode\Services\QrCodeService`
 | Listar Pagamentos | `getStaticQrCodePayments($identifier)` | Lista todos os pagamentos recebidos de um QR Code estático |
 | Cancelar QR Code | `cancelStaticQrCode($transactionIdentifier)` | Cancela um QR Code estático previamente criado |
 
-### QR Code Dinâmico Imediato (Módulo `QrCode`)
+### QR Code Dinâmico Imediato (Módulo `QR Code`)
 
 Classe: `Delfinance\QrCode\Services\QrCodeService`
 
@@ -117,7 +117,7 @@ Classe: `Delfinance\QrCode\Services\QrCodeService`
 | Consultar QR Code | `getImmediateQrCode($id)` | Busca informações de um QR Code dinâmico por ID |
 | Cancelar QR Code | `cancelImmediateQrCode($id)` | Cancela um QR Code dinâmico imediato |
 
-### QR Code Dinâmico com Vencimento (Módulo `QrCode`)
+### QR Code Dinâmico com Vencimento (Módulo `QR Code`)
 
 Classe: `Delfinance\QrCode\Services\QrCodeService`
 
